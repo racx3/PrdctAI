@@ -19,11 +19,27 @@ class TransitionPredictor:
         default_factory=lambda: [[1, 1], [1, 1]]
     )  # Laplace smoothing
 
+    @staticmethod
+    def _validate_binary(value: int, field_name: str) -> None:
+        if value not in (0, 1):
+            raise ValueError(f"{field_name} must be 0 or 1")
+
     def predict_next(self, previous_choice: int) -> int:
+        """Predict the next binary choice from transition frequencies.
+
+        Uses observed counts for transitions from `previous_choice`.
+        If counts are tied, this deterministically predicts repetition.
+        """
+        self._validate_binary(previous_choice, "previous_choice")
         zero_count, one_count = self.transition_counts[previous_choice]
-        return 1 if one_count >= zero_count else 0
+        if one_count == zero_count:
+            return previous_choice
+        return 1 if one_count > zero_count else 0
 
     def observe(self, previous_choice: int, next_choice: int) -> None:
+        """Record an observed transition to update predictor state."""
+        self._validate_binary(previous_choice, "previous_choice")
+        self._validate_binary(next_choice, "next_choice")
         self.transition_counts[previous_choice][next_choice] += 1
 
 

@@ -1,6 +1,11 @@
 import unittest
 
-from prdctai import demo, exploit_human_random, generate_human_like_sequence
+from prdctai import (
+    TransitionPredictor,
+    demo,
+    exploit_human_random,
+    generate_human_like_sequence,
+)
 
 
 class PredictableRandomTests(unittest.TestCase):
@@ -23,6 +28,16 @@ class PredictableRandomTests(unittest.TestCase):
         output = demo(length=50, switch_bias=0.7, seed=42)
         self.assertIn("accuracy", output)
         self.assertIn("switch_bias=0.7", output)
+
+    def test_predict_next_rejects_non_binary_choice(self):
+        predictor = TransitionPredictor()
+        with self.assertRaises(ValueError):
+            predictor.predict_next(2)
+
+    def test_observe_rejects_non_binary_choice(self):
+        predictor = TransitionPredictor()
+        with self.assertRaises(ValueError):
+            predictor.observe(0, 2)
 
 
 if __name__ == "__main__":
